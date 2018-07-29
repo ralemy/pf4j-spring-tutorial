@@ -217,4 +217,4 @@ The interfaces to implement are included inside the plugin as static classes imp
 Here the ```mvcControllers()``` returns a List of annotated classes to be used as restcontrollers and the ```reactiveRoutes()``` returns a list of ```RouterFunction``` objects to create the reactive endpoints. needless to say, 
 a plugin can return an empty list if it doesn't have any endpoints to add.
 
-[Back to Contents](../../../#contents)
+[Back to Contents](../#contents)

@@ -200,6 +200,6 @@ here is the return value for the rest of the endpoints
 |/plugin-end-point| reactive router endpoint|
 
 
-[Back to Contents](../../../#contents)
+[Back to Contents](../#contents)
 
 [PF4J Documentation]:https://pf4j.org/

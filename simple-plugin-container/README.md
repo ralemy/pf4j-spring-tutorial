@@ -215,7 +215,7 @@ $ java -jar simple-plugin-container-1.0-SNAPSHOT.jar
 
 ```
 
-[Back to Contents](../../../#contents)
+[Back to Contents](../#contents)
 
 
 [PF4J]: https://github.com/pf4j/pf4j
