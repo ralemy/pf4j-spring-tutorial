@@ -45,13 +45,13 @@ Finally, we add a reactive Restful endpoint using a Router Function
 
 [Shared Interface](./shared-interfaces).............  Allows plugins to interact with the container and eachother
 
-[Baremetal Plugin](docs/simple-plugin.md)............. Minimal java code that creates a functioning plugin
+[Baremetal Plugin](./simple-test-plugin)............. Minimal java code that creates a functioning plugin
 
-[Baremetal Container](docs/simple-container.md)....... Minimal java code that creates standalone plugin container
+[Baremetal Container](./simple-plugin-container)....... Minimal java code that creates standalone plugin container
 
-[Spring boot Plugin](docs/spring-plugin.md)............ A plugin that uses Spring boot for DI and adds endpoints created with annotated classes or router functions.
+[Spring boot Plugin](./spring-test-plugin)............ A plugin that uses Spring boot for DI and adds endpoints created with annotated classes or router functions.
 
-[Spring boot Container](docs/spring-container.md)...... A Spring boot app with plugin support and reactive Restful service
+[Spring boot Container](./spring-plugin-container)...... A Spring boot app with plugin support and reactive Restful service
 
 # Overview 
 

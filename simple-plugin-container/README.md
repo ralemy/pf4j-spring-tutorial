@@ -160,6 +160,7 @@ Notice that the plugin returns empty lists (not null) for methods that it won't 
 building the project with ```mvn clean package``` will create a zip file in the 
 ```target``` directory. in the future steps we will move this zip file into the plugins directory and run it through the container.
 
+[Back to Contents](../../../#contents)
 
 [PF4J]: https://github.com/pf4j/pf4j
 
