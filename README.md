@@ -43,7 +43,7 @@ Finally, we add a reactive Restful endpoint using a Router Function
 
 [Overview](#overview) ....................... Explains the reasons behind creation of this repository
 
-[Shared Interface](docs/interface.md).............  Allows plugins to interact with the container and eachother
+[Shared Interface](./shared-interfaces).............  Allows plugins to interact with the container and eachother
 
 [Baremetal Plugin](docs/simple-plugin.md)............. Minimal java code that creates a functioning plugin
 
