@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Plugin-Dependencies: 
+Plugin-Id: simple-hello-plugin
+Archiver-Version: Plexus Archiver
+Built-By: rezaalemy
+Plugin-Provider: Curis Profound
+Plugin-Version: 0.0.1
+Plugin-Class: com.curisprofound.plugins.simple.HelloPlugin
+Created-By: Apache Maven 3.5.3
+Build-Jdk: 1.8.0_161
+
