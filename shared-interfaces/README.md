@@ -80,5 +80,7 @@ mvn install:install-file \
  -Dpackaging=jar
 ```
 
+[Back to Content](../#contents)
+
 [PF4J]: https://github.com/pf4j/pf4j
 
