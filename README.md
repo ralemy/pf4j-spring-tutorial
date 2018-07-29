@@ -41,7 +41,7 @@ Finally, we add a reactive Restful endpoint using a Router Function
 
 ## Contents
 
-[Overview](./#Overview) ....................... Explains the reasons behind creation of this repository
+[Overview](#Overview) ....................... Explains the reasons behind creation of this repository
 
 [Shared Interface](docs/interface.md).............  Allows plugins to interact with the container and eachother
 
@@ -86,7 +86,7 @@ The following table summarizes the above concepts
 |Shared Interfaces|Application Owner| the collection of interfaces that plugins implement. published by the application owner and included as a dependency by both the plugin-container and the plugin|
 |Plugin| Plugin Developer| the implementation of one or more interfaces defined in Shared-Plugin-Interfaces. deployed as a zip file of classes and their dependencies inside the plugins directory of the Plugin-Container|
 
-[Back to Contents](./#contents)
+[Back to Contents](#contents)
 
 [PF4J]: https://github.com/pf4j/pf4j
 
