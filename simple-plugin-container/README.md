@@ -1,166 +1,222 @@
-## Simple Plugin
+# The plugin-container application
 
-A plugin is packaged as a zip or jar file and is put in a directory for the container to scan, decompress and use. the POM file for the plugin shall contain dependenceis required to compile it as well as the information that needs to go into the manifest. 
+For the application to support the plugins, we need the pom file to depend at least on PF4J and the shared plugin interfaces. if you are planning to use the slf4j logger, include the slf4j-simple package 
+as well. 
 
-Minimum dependencies include the PF4J and the shared interfaces.
 
 ```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.curisprofound</groupId>
+    <artifactId>simple-plugin-container</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
     <dependencies>
+        <!-- https://mvnrepository.com/artifact/org.pf4j/pf4j -->
         <dependency>
             <groupId>org.pf4j</groupId>
             <artifactId>pf4j</artifactId>
             <version>2.3.0</version>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-simple -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.5</version>
+        </dependency>
+
         <dependency>
             <groupId>com.curisprofound</groupId>
             <artifactId>shared-plugin-interfaces</artifactId>
-            <version>1.1.0</version>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
+<!-- build section goes here -->
+</project>
 ```
+in the build section, the following plugins are included: 
 
-We also need to configure maven-jar-plugin to add plugin information to manifest:
-
+* To compile the classes (using class level 8 to be able to use lambda and other extensions):
 
 ```xml
-....
-   <properties>
-        <plugin.id>simple-hello-plugin</plugin.id>
-        <plugin.class>com.curisprofound.plugins.simple.HelloPlugin</plugin.class>
-        <plugin.version>0.0.1</plugin.version>
-        <plugin.provider>Curis Profound</plugin.provider>
-        <plugin.dependencies/>
-    </properties>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>8</source>
+                    <target>8</target>
+                </configuration>
+            </plugin>
+```
+* to create an executable jar which looks in lib/ for its dependencies
 
-....
-....
-
+```xml
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.4</version>
+                <version>2.3.1</version>
                 <configuration>
                     <archive>
-                        <manifestEntries>
-                            <Plugin-Id>${plugin.id}</Plugin-Id>
-                            <Plugin-Class>${plugin.class}</Plugin-Class>
-                            <Plugin-Version>${plugin.version}</Plugin-Version>
-                            <Plugin-Provider>${plugin.provider}</Plugin-Provider>
-                            <Plugin-Dependencies>${plugin.dependencies}</Plugin-Dependencies>
-                        </manifestEntries>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                            <mainClass>com.curisprofound.plugins.simple.Container</mainClass>
+                        </manifest>
                     </archive>
                 </configuration>
             </plugin>
 
 ```
 
-To create the zip file, maven-assembly-plugin is used. this plugin is configured
-to read ```src/main/resources/assembly.xml``` file for instructions on how
-to create the zip file. 
-
-The most important point on creating the assembly file is to ensure that it does not include dependencies that are shared between the plugin and the container or other plugins. for example, the ```slf4j``` or the shared interfaces should not be included in the plugin zip file as they will be included in the container dependencies.
-
-* we exclude the dependencies that are already declared in the container
+* to create a zip file that would layout the application correctly, we use the maven assembly plugin:
 
 ```xml
- <dependencySets>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.3</version>
+                <configuration>
+                    <descriptors>
+                        <descriptor>
+                            src/main/resources/assembly.xml
+                        </descriptor>
+                    </descriptors>
+                    <appendAssemblyId>false</appendAssemblyId>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>attached</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+```
+
+The assembly plugin will look in ```src/main/resources/assembly.xml``` to see how to create the zip file for the main application.
+
+here, we create a lib/ subdirectory and put all the dependencies in it:
+
+```xml
+    <dependencySets>
         <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
-            <scope>runtime</scope>
             <outputDirectory>lib</outputDirectory>
             <includes>
                 <include>*:jar:*</include>
             </includes>
-            <excludes>
-                <exclude>org.slf4j:*</exclude>
-                <exclude>com.curisprofound:shared-plugin-interface</exclude>
-            </excludes>
         </dependencySet>
     </dependencySets>
 ```
-
-* we include the classes, not the jar file, because the unzipped directory is not in the classpath
-
-```xml
-        <fileSet>
-            <directory>target/classes</directory>
-            <outputDirectory>classes</outputDirectory>
-        </fileSet>
-```
-
-* we include a plugin.properties file in the root of the zip file
+we put the executable jar in the root of the unzipped directory and create an empty plugins directory where third party plugins will reside
 
 ```xml
+    <fileSets>
         <fileSet>
-            <directory>src/main/resources</directory>
+            <directory>${project.build.directory}</directory>
             <outputDirectory/>
             <includes>
-                <include>plugin.properties</include>
+                <include>*.jar</include>
             </includes>
+            <excludes>
+                <exclude>*-javadoc.jar</exclude>
+                <exclude>*-sources.jar</exclude>
+            </excludes>
         </fileSet>
+        <fileSet>
+            <directory>.</directory>
+            <outputDirectory>plugins</outputDirectory>
+            <excludes>
+                <exclude>*/**</exclude>
+            </excludes>
+        </fileSet>
+    </fileSets>
 ```
 
-this just includes the properties we added to the manifest above
-
-```
-plugin.id=simple-hello-plugin
-plugin.class=com.curisprofound.plugins.simple.HelloPlugin
-plugin.version=0.0.1
-plugin.provider=Curis Profound
-plugin.dependencies=
-```
-
-## The plugin code
-
-the actual plugin now can implement extension points and override start and stop hooks:
+So, our plugin container code requires to create a new PluginManager object,
+tell it to load and start plugins and then use it to access the plugins. here
+is the minimal code for that:
 
 ```java
 package com.curisprofound.plugins.simple;
 
-public class SimplePlugin extends Plugin {
 
-    private static Logger log = LoggerFactory.getLogger(SimplePlugin.class);
+public class Container {
 
-    public SimplePlugin(PluginWrapper wrapper) {
-        super(wrapper);
-    }
+    private static final Logger log = LoggerFactory.getLogger(Container.class);
 
-    @Override
-    public void start(){
-        log.info("Simple Plugin Started");
-    }
+    public static void main(String[] args){
 
-    @Override
-    public void stop(){
-        log.info("Simple Plugin Stopped");
-    }
+        final PluginManager pm = new DefaultPluginManager();
+        pm.loadPlugins();
+        pm.startPlugins();
 
-    @Extension
-    public static class SimpleIdentityPlugin implements PluginInterface {
+        final List<PluginInterface> plugins = pm.getExtensions(PluginInterface.class);
 
-        public String identify() {
-            return "A simple plugin with no dependency on Spring";
-        }
+        log.info(MessageFormat.format(" {0} Plugin(s) found ", String.valueOf(plugins.size())));
 
-        @Override
-        public List<?> reactiveRoutes() {
-            return new ArrayList<>();
-        }
+        plugins.forEach(g ->
+                log.info(MessageFormat.format(" {0}: {1}",
+                        g.getClass().getCanonicalName(),
+                        g.identify())));
 
-        @Override
-        public List<Object> mvcControllers() {
-            return new ArrayList<>();
-        }
+        pm.stopPlugins();
+
     }
 }
+
 ```
-Notice that the plugin returns empty lists (not null) for methods that it won't implement. this is a good idea to return the empty version of the object instead of null and avoid ```NullPointerException``` messsages. 
 
+build the project with
+```bash
+mvn clean package
+```
 
-building the project with ```mvn clean package``` will create a zip file in the 
-```target``` directory. in the future steps we will move this zip file into the plugins directory and run it through the container.
+this will create, among other things, a zip file in the target directory. 
+
+```bash
+unzip target/simple-plugin-container-1.0-SNAPSHOT.zip
+cd target/simple-plugin-container-1.0-SNAPSHOT
+java -jar simple-plugin-container-1.0-SNAPSHOT.jar
+```
+The output is as expected for an empty plugins directory
+
+```bash
+[main] INFO org.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
+[main] INFO org.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
+[main] INFO org.pf4j.DefaultPluginManager - PF4J version 2.3.0 in 'deployment' mode
+[main] INFO org.pf4j.AbstractPluginManager - No plugins
+[main] INFO com.curisprofound.plugins.simple.Container -  0 Plugin(s) found 
+```
+
+Once a plugin is created, copy it to the plugin directory. for example, the ```simple-test-plugin``` project will create a ```target/test-plugin-simple-1.0-SNAPSHOT.zip``` when built with ```mvn clean package```. Copy this file to the plugins directory and run the container again to see the plugin discovered and working
+
+```bash
+$ cd target/simple-plugin-container-1.0-SNAPSHOT
+$ cp ../../../simple-test-plugin/target/test-plugin-simple-1.0-SNAPSHOT.zip ./plugins/
+$ java -jar simple-plugin-container-1.0-SNAPSHOT.jar 
+[main] INFO org.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
+[main] INFO org.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
+[main] INFO org.pf4j.DefaultPluginManager - PF4J version 2.3.0 in 'deployment' mode
+[main] INFO org.pf4j.util.FileUtils - Expanded plugin zip 'test-plugin-simple-1.0-SNAPSHOT.zip' in 'test-plugin-simple-1.0-SNAPSHOT'
+[main] INFO org.pf4j.AbstractPluginManager - Plugin 'simple-identity-plugin@0.0.1' resolved
+[main] INFO org.pf4j.AbstractPluginManager - Start plugin 'simple-identity-plugin@0.0.1'
+[main] INFO com.curisprofound.plugins.simple.SimplePlugin - Simple Plugin Started
+[main] INFO com.curisprofound.plugins.simple.Container -  1 Plugin(s) found 
+[main] INFO com.curisprofound.plugins.simple.Container -  com.curisprofound.plugins.simple.SimplePlugin.SimpleIdentityPlugin: A simple plugin with no dependency on Spring
+[main] INFO org.pf4j.AbstractPluginManager - Stop plugin 'simple-identity-plugin@0.0.1'
+[main] INFO com.curisprofound.plugins.simple.SimplePlugin - Simple Plugin Stopped
+
+```
 
 [Back to Contents](../../../#contents)
+
 
 [PF4J]: https://github.com/pf4j/pf4j
 
