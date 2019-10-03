@@ -1,4 +1,4 @@
-# Plugin-support with PF4J
+# Extending applications with PF4J plugins
 
 This repository provides a tutorial and an example on how to use PF4J to 
 develop an application that supports extension through the development of third-party plugins.
